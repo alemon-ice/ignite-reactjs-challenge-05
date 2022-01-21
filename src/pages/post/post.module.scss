@@ -1,1 +1,75 @@
-// TODO
+.container {
+}
+
+.bannerWrapper {
+  display: flex;
+  justify-content: center;
+  background-color: var(--gray-900);
+
+  img {
+    max-height: 400px;
+  }
+}
+
+.post {
+  max-width: 720px;
+  margin: 5rem auto 0;
+
+  h1,
+  h2 {
+    color: var(--gray-050);
+  }
+}
+
+.postDetails {
+  display: flex;
+
+  margin-top: 1rem;
+
+  & div {
+    display: flex;
+
+    svg {
+      margin-right: 0.5rem;
+    }
+
+    &.createdAt,
+    &.authorName,
+    &.readingTime {
+      margin-right: 1rem;
+      time,
+      span {
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        color: var(--gray-250);
+      }
+    }
+  }
+}
+
+.postContent {
+  margin: 5rem auto 0;
+  line-height: 2rem;
+  font-size: 1.125rem;
+  color: var(--gray-250);
+
+  p,
+  ul {
+    margin: 1.5rem 0;
+  }
+
+  ul {
+    padding-left: 1.5rem;
+
+    li {
+      margin: 0.5rem 0;
+    }
+  }
+
+  &.previewContent {
+    background: linear-gradient(var(--gray-100), transparent);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}

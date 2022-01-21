@@ -1,12 +1,14 @@
-// import { GetStaticProps } from 'next';
+import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
+import Prismic from '@prismicio/client';
 import { FiCalendar, FiUser } from 'react-icons/fi';
-
-// import { getPrismicClient } from '../services/prismic';
+import { useState } from 'react';
+import { getPrismicClient } from '../services/prismic';
 
 // import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
+import { formatPostsResponse, formatCreatedAtInfo } from '../util/format';
 
 interface Post {
   uid?: string;
@@ -27,75 +29,80 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-export default function Home(): JSX.Element {
+export default function Home({ postsPagination }: HomeProps): JSX.Element {
+  const [posts, setPosts] = useState(postsPagination.results);
+  const [nextPage, setNextPage] = useState(postsPagination.next_page);
+
+  async function loadMorePosts(): Promise<void> {
+    const response = await fetch(`${nextPage}`).then(res => res.json());
+
+    const morePosts = formatPostsResponse(response);
+
+    setPosts(state => [...state, ...morePosts]);
+    setNextPage(response.next_page);
+  }
+
   return (
     <>
       <Head>
-        <title>Home</title>
+        <title>Home | Spacetraveling</title>
       </Head>
 
       <main className={styles.contentContainer}>
         <div className={styles.posts}>
-          <Link href="/">
-            <a>
-              <strong>Como utilizar Hooks</strong>
-              <p>Pensando em sincronização em vez de ciclos de vida.</p>
-              <div>
-                <div className={styles.createdAt}>
-                  <FiCalendar />
-                  <time>15 Mar 2021</time>
+          {posts.map(post => (
+            <Link key={post.uid} href={`/post/${post.uid}`}>
+              <a>
+                <strong>{post.data.title}</strong>
+                <p>{post.data.subtitle}</p>
+                <div>
+                  <div className={styles.createdAt}>
+                    <FiCalendar />
+                    <time>
+                      {formatCreatedAtInfo(post.first_publication_date)}
+                    </time>
+                  </div>
+                  <div className={styles.authorName}>
+                    <FiUser />
+                    <span>{post.data.author}</span>
+                  </div>
                 </div>
-                <div className={styles.authorName}>
-                  <FiUser />
-                  <span>Joseph Oliveira</span>
-                </div>
-              </div>
-            </a>
-          </Link>
-          <Link href="/">
-            <a>
-              <strong>Como utilizar Hooks</strong>
-              <p>Pensando em sincronização em vez de ciclos de vida.</p>
-              <div>
-                <div className={styles.createdAt}>
-                  <FiCalendar />
-                  <time>15 Mar 2021</time>
-                </div>
-                <div className={styles.authorName}>
-                  <FiUser />
-                  <span>Joseph Oliveira</span>
-                </div>
-              </div>
-            </a>
-          </Link>
-          <Link href="/">
-            <a>
-              <strong>Como utilizar Hooks</strong>
-              <p>Pensando em sincronização em vez de ciclos de vida.</p>
-              <div>
-                <div className={styles.createdAt}>
-                  <FiCalendar />
-                  <time>15 Mar 2021</time>
-                </div>
-                <div className={styles.authorName}>
-                  <FiUser />
-                  <span>Joseph Oliveira</span>
-                </div>
-              </div>
-            </a>
-          </Link>
-          <button type="button" className={styles.loadMorePosts}>
-            Carregar mais posts
-          </button>
+              </a>
+            </Link>
+          ))}
+          {nextPage ? (
+            <button
+              type="button"
+              className={styles.loadMorePosts}
+              onClick={loadMorePosts}
+            >
+              Carregar mais posts
+            </button>
+          ) : null}
         </div>
       </main>
     </>
   );
 }
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient();
 
-//   // TODO
-// };
+  const response = await prismic.query(
+    [Prismic.predicates.at('document.type', 'publications')],
+    {
+      pageSize: 2,
+    }
+  );
+
+  const posts = formatPostsResponse(response);
+
+  return {
+    props: {
+      postsPagination: {
+        next_page: response.next_page,
+        results: posts,
+      },
+    },
+  };
+};
