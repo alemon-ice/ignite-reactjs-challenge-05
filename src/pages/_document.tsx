@@ -11,6 +11,11 @@ export default class MyDocument extends Document {
             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto:wght@400;700;900&display=swap"
             rel="stylesheet"
           />
+          <script
+            async
+            defer
+            src={`//static.cdn.prismic.io/prismic.js?repo=${process.env.PRISMIC_REPO_NAME}&new=true`}
+          />
         </Head>
         <body>
           <Main />
